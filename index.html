@@ -452,44 +452,6 @@
     text-transform: uppercase;
   }
 
-  /* API docs */
-  .api-docs {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 28px 32px;
-    margin-bottom: 40px;
-  }
-
-  .api-docs code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    background: var(--accent-pale);
-    padding: 2px 6px;
-    border-radius: 2px;
-    color: var(--accent);
-  }
-
-  .api-docs p {
-    font-size: 13px;
-    line-height: 1.75;
-    color: var(--text-mid);
-    margin-bottom: 6px;
-  }
-
-  .api-example {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 12px 16px;
-    margin: 10px 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-mid);
-    overflow-x: auto;
-    white-space: pre;
-  }
-
   .footer-note {
     text-align: center;
     font-size: 11px;
@@ -540,17 +502,6 @@
   <div id="stats-container"></div>
   <div id="chart-container"></div>
   <div id="pins-container"></div>
-
-  <div class="api-docs">
-    <div class="section-label">API Reference</div>
-    <p>Stateless simulation via query parameters. Identical inputs always produce identical outputs.</p>
-    <p><strong>Frame mode</strong></p>
-    <div class="api-example">?mode=frame&skill=0.75&seed=42&isLastFrame=0</div>
-    <p><strong>Game mode</strong></p>
-    <div class="api-example">?mode=game&skill=0.75&seed=42</div>
-    <p><strong>Visualization</strong></p>
-    <div class="api-example">?mode=viz&skill=0.75&seed=42</div>
-  </div>
 
   <div class="footer-note">Deterministic Bowling Engine &middot; seed once, draw sequentially &middot; f(mode, skill, seed) &rarr; output</div>
 </div>

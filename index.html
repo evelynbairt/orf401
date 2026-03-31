@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bowling Simulation Engine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #0c0e13;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --border: #2a2f42;
+    --text: #e8eaf0;
+    --text-dim: #7a809a;
+    --accent: #f7a440;
+    --accent2: #e85d5d;
+    --strike: #5ee89e;
+    --spare: #5eb3e8;
+    --gutter: #e85d5d;
+    --pin-on: #e8eaf0;
+    --pin-off: #2a2f42;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ---------- API MODE (JSON output) ---------- */
+  body.api-mode { background: #000; }
+  body.api-mode * { display: none; }
+  body.api-mode #json-output {
+    display: block;
+    font-family: monospace;
+    white-space: pre-wrap;
+    color: #0f0;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  /* ---------- VIZ MODE ---------- */
+  .viz-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .params-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .param-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .param-chip .label { color: var(--text-dim); }
+  .param-chip .value { color: var(--accent); font-weight: 600; }
+
+  /* Scorecard */
+  .scorecard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .scorecard-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .frames-row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0;
+  }
+
+  .frame-cell {
+    border-right: 1px solid var(--border);
+    padding: 0;
+    position: relative;
+  }
+  .frame-cell:last-child { border-right: none; }
+
+  .frame-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 6px 0 2px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rolls-row {
+    display: flex;
+    height: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .roll-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    border-right: 1px solid var(--border);
+  }
+  .roll-box:last-child { border-right: none; }
+  .roll-box.strike { color: var(--strike); }
+  .roll-box.spare { color: var(--spare); }
+  .roll-box.gutter { color: var(--gutter); }
+
+  .frame-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 0;
+    color: var(--text);
+  }
+
+  .cumul-score {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* Total score */
+  .total-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .total-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .stat-card .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  /* Pin diagram */
+  .pin-section {
+    margin-bottom: 32px;
+  }
+
+  .pin-section h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .pin-frames {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .pin-frame-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .pin-frame-card .pf-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .pin-triangle {
+    display: inline-block;
+  }
+
+  .pin-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 3px;
+  }
+
+  .pin-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--pin-on);
+    transition: background 0.2s;
+  }
+  .pin-dot.down { background: var(--pin-off); }
+
+  /* Roll chart */
+  .roll-chart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+
+  .roll-chart h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 120px;
+  }
+
+  .chart-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .chart-bar {
+    width: 100%;
+    max-width: 32px;
+    border-radius: 4px 4px 0 0;
+    min-height: 2px;
+    transition: height 0.3s;
+  }
+
+  .chart-bar.r1 { background: var(--accent); }
+  .chart-bar.r2 { background: var(--spare); opacity: 0.7; }
+  .chart-bar.r3 { background: var(--strike); opacity: 0.7; }
+
+  .chart-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Controls (interactive panel) */
+  .controls-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .controls-panel h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 12px;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .control-group label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .control-group input[type="range"] {
+    width: 200px;
+    accent-color: var(--accent);
+  }
+
+  .control-group input[type="number"] {
+    width: 100px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--accent);
+    color: var(--bg);
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+
+  /* API docs */
+  .api-docs {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .api-docs h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .api-docs code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .api-docs p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .api-example {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 10px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 20px 0 40px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div id="json-output"></div>
+
+<div id="viz-root" class="viz-container" style="display:none;">
+  <div class="header">
+    <h1>🎳 Bowling Simulation Engine</h1>
+    <span class="badge">v1.0 · deterministic</span>
+  </div>
+
+  <div id="params-bar" class="params-bar"></div>
+
+  <!-- Interactive controls -->
+  <div class="controls-panel">
+    <h3>Simulation Controls</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Skill: <span id="skill-display">0.75</span></label>
+        <input type="range" id="ctrl-skill" min="0" max="1" step="0.01" value="0.75">
+      </div>
+      <div class="control-group">
+        <label>Seed</label>
+        <input type="number" id="ctrl-seed" value="42" min="0" max="999999">
+      </div>
+      <button class="btn" onclick="runInteractive()">Simulate</button>
+    </div>
+  </div>
+
+  <div id="scorecard-container"></div>
+  <div id="stats-container"></div>
+  <div id="chart-container"></div>
+  <div id="pins-container"></div>
+
+  <div class="api-docs">
+    <h3>API Reference</h3>
+    <p>This engine exposes a stateless simulation via query parameters. Same inputs always produce identical outputs.</p>
+    <p><strong>Frame mode:</strong></p>
+    <div class="api-example">?mode=frame&skill=0.75&seed=42&isLastFrame=0</div>
+    <p><strong>Game mode:</strong></p>
+    <div class="api-example">?mode=game&skill=0.75&seed=42</div>
+    <p><strong>Visualization:</strong></p>
+    <div class="api-example">?mode=viz&skill=0.75&seed=42</div>
+  </div>
+
+  <div class="footer-note">Deterministic Bowling Engine · seed once, draw sequentially · f(mode, skill, seed) → output</div>
+</div>
+
+<script>
+// ============================================================
+//  SEEDED PRNG — Mulberry32 (32-bit, deterministic)
+// ============================================================
+function mulberry32(seed) {
+  let s = seed | 0;
+  return function() {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ============================================================
+//  SKILL MODEL
+// ============================================================
+// Maps skill ∈ [0,1] to bowling performance parameters.
+//
+// strike_prob:   Probability of knocking all 10 pins on first roll.
+//                Uses a sigmoid-like curve: low skill → ~1%, high skill → ~65%.
+//
+// spare_ability: Given remaining pins after roll 1, how likely the bowler
+//                converts the spare. Modulated by pin count.
+//
+// pin_mean:      Expected pins on a non-strike first roll, drawn from a
+//                beta-like distribution shaped by skill.
+//
+// Design rationale:
+//   - skill=0.0 → beginner: ~1% strikes, avg ~3 pins/roll, ~10% spare
+//   - skill=0.5 → intermediate: ~15% strikes, avg ~6 pins, ~40% spare
+//   - skill=1.0 → pro: ~65% strikes, avg ~9 pins, ~85% spare
+
+function getStrikeProb(skill) {
+  // Sigmoid curve: 0.01 at skill=0, ~0.65 at skill=1
+  return 0.01 + 0.64 / (1 + Math.exp(-8 * (skill - 0.55)));
+}
+
+function getSpareConversionProb(skill, remainingPins) {
+  // Base spare ability from skill
+  const baseSpare = 0.05 + 0.80 * Math.pow(skill, 1.3);
+  // Harder to convert more remaining pins
+  const difficulty = 1 - (remainingPins - 1) * 0.06;
+  return Math.max(0.02, Math.min(0.95, baseSpare * Math.max(0.2, difficulty)));
+}
+
+function rollFirstBall(skill, rng) {
+  // Check for strike first
+  if (rng() < getStrikeProb(skill)) return 10;
+
+  // Non-strike: sample pins from a skill-shaped distribution
+  // Use beta-like distribution via inverse transform
+  const alpha = 1 + skill * 6;  // shape: higher skill → right-skewed
+  const beta_ = 1 + (1 - skill) * 4;
+
+  // Simple beta approximation using two gamma-like draws
+  let x = 0, y = 0;
+  for (let i = 0; i < Math.ceil(alpha); i++) x -= Math.log(1 - rng());
+  for (let i = 0; i < Math.ceil(beta_); i++) y -= Math.log(1 - rng());
+  const betaSample = x / (x + y);
+
+  // Map to 0-9 pins (not 10, since we already checked strike)
+  const pins = Math.min(9, Math.max(0, Math.round(betaSample * 9)));
+  return pins;
+}
+
+function rollSecondBall(skill, remainingPins, rng) {
+  if (remainingPins === 0) return 0;
+
+  // Check spare conversion
+  if (rng() < getSpareConversionProb(skill, remainingPins)) {
+    return remainingPins; // spare!
+  }
+
+  // Partial knock: uniform-ish from 0 to remainingPins-1, biased by skill
+  const maxKnock = remainingPins - 1;
+  if (maxKnock <= 0) return 0;
+  const skew = 0.3 + 0.5 * skill; // higher skill → knock more
+  const raw = Math.pow(rng(), 1 / (skew + 0.1));
+  return Math.min(maxKnock, Math.max(0, Math.round(raw * maxKnock)));
+}
+
+// ============================================================
+//  FRAME SIMULATION
+// ============================================================
+function simulateFrame(skill, rng, isLastFrame) {
+  const rolls = [];
+
+  if (!isLastFrame) {
+    // Normal frame: up to 2 rolls
+    const r1 = rollFirstBall(skill, rng);
+    rolls.push(r1);
+    if (r1 < 10) {
+      const r2 = rollSecondBall(skill, 10 - r1, rng);
+      rolls.push(r2);
+    }
+  } else {
+    // 10th frame: special rules
+    const r1 = rollFirstBall(skill, rng);
+    rolls.push(r1);
+
+    if (r1 === 10) {
+      // Strike in 10th: get 2 more rolls
+      const r2 = rollFirstBall(skill, rng);
+      rolls.push(r2);
+      if (r2 === 10) {
+        const r3 = rollFirstBall(skill, rng);
+        rolls.push(r3);
+      } else {
+        const r3 = rollSecondBall(skill, 10 - r2, rng);
+        rolls.push(r3);
+      }
+    } else {
+      const r2 = rollSecondBall(skill, 10 - r1, rng);
+      rolls.push(r2);
+      if (r1 + r2 === 10) {
+        // Spare in 10th: get 1 more roll
+        const r3 = rollFirstBall(skill, rng);
+        rolls.push(r3);
+      }
+    }
+  }
+
+  return rolls;
+}
+
+// ============================================================
+//  FULL GAME SIMULATION
+// ============================================================
+function simulateGame(skill, seed) {
+  const rng = mulberry32(seed);
+  const frames = [];
+
+  // Simulate all 10 frames, collecting rolls
+  for (let f = 0; f < 10; f++) {
+    const isLast = (f === 9);
+    const rolls = simulateFrame(skill, rng, isLast);
+    frames.push({ frame_number: f + 1, rolls });
+  }
+
+  // Score the game using official rules
+  // Flatten all rolls for lookahead
+  const allRolls = [];
+  const rollFrameMap = []; // which frame each roll belongs to
+  for (const f of frames) {
+    for (const r of f.rolls) {
+      allRolls.push(r);
+      rollFrameMap.push(f.frame_number);
+    }
+  }
+
+  let rollIdx = 0;
+  let cumulativeScore = 0;
+
+  for (let f = 0; f < 10; f++) {
+    const frame = frames[f];
+    let frameScore = 0;
+
+    if (f < 9) {
+      // Frames 1-9
+      if (frame.rolls[0] === 10) {
+        // Strike: 10 + next 2 rolls
+        frameScore = 10;
+        const nextIdx1 = rollIdx + 1;
+        const nextIdx2 = rollIdx + 2;
+        if (nextIdx1 < allRolls.length) frameScore += allRolls[nextIdx1];
+        if (nextIdx2 < allRolls.length) frameScore += allRolls[nextIdx2];
+        rollIdx += 1;
+      } else if (frame.rolls[0] + (frame.rolls[1] || 0) === 10) {
+        // Spare: 10 + next 1 roll
+        frameScore = 10;
+        const nextIdx = rollIdx + 2;
+        if (nextIdx < allRolls.length) frameScore += allRolls[nextIdx];
+        rollIdx += 2;
+      } else {
+        // Open frame
+        frameScore = frame.rolls.reduce((a, b) => a + b, 0);
+        rollIdx += 2;
+      }
+    } else {
+      // 10th frame: just sum the rolls (no lookahead needed)
+      frameScore = frame.rolls.reduce((a, b) => a + b, 0);
+      rollIdx += frame.rolls.length;
+    }
+
+    cumulativeScore += frameScore;
+    frame.frame_score = frameScore;
+    frame.cumulative_score = cumulativeScore;
+  }
+
+  return {
+    skill,
+    seed,
+    total_score: cumulativeScore,
+    frames
+  };
+}
+
+// ============================================================
+//  FRAME-ONLY SIMULATION (mode=frame)
+// ============================================================
+function simulateFrameOnly(skill, seed, isLastFrame) {
+  const rng = mulberry32(seed);
+  const rolls = simulateFrame(skill, rng, isLastFrame);
+
+  const result = {
+    skill,
+    seed,
+    is_last_frame: isLastFrame
+  };
+
+  rolls.forEach((r, i) => {
+    result['roll' + (i + 1)] = r;
+  });
+
+  // Classify the frame
+  if (rolls[0] === 10) {
+    result.type = 'strike';
+  } else if (!isLastFrame && rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
+    result.type = 'spare';
+  } else if (isLastFrame) {
+    // 10th frame type classification
+    if (rolls[0] === 10) result.type = 'strike';
+    else if (rolls[0] + rolls[1] === 10) result.type = 'spare';
+    else result.type = 'open';
+  } else {
+    result.type = 'open';
+  }
+
+  result.pins_total = rolls.reduce((a, b) => a + b, 0);
+
+  return result;
+}
+
+// ============================================================
+//  VISUALIZATION RENDERER
+// ============================================================
+function renderViz(gameData) {
+  // Params bar
+  const paramsBar = document.getElementById('params-bar');
+  paramsBar.innerHTML = `
+    <div class="param-chip"><span class="label">mode </span><span class="value">viz</span></div>
+    <div class="param-chip"><span class="label">skill </span><span class="value">${gameData.skill}</span></div>
+    <div class="param-chip"><span class="label">seed </span><span class="value">${gameData.seed}</span></div>
+    <div class="param-chip"><span class="label">total </span><span class="value">${gameData.total_score}</span></div>
+  `;
+
+  // Scorecard
+  let scorecardHTML = `<div class="scorecard">
+    <div class="scorecard-title">Scorecard</div>
+    <div class="frames-row">`;
+
+  for (const frame of gameData.frames) {
+    const rolls = frame.rolls;
+    const isLast = frame.frame_number === 10;
+    let rollBoxes = '';
+
+    if (!isLast) {
+      if (rolls[0] === 10) {
+        rollBoxes = `<div class="roll-box">&nbsp;</div><div class="roll-box strike">X</div>`;
+      } else {
+        const r1Display = rolls[0] === 0 ? `<span class="gutter">—</span>` : rolls[0];
+        const isSpare = rolls.length >= 2 && rolls[0] + rolls[1] === 10;
+        const r2Display = isSpare ? `<span class="spare">/</span>` : (rolls[1] === 0 ? `<span class="gutter">—</span>` : rolls[1]);
+        rollBoxes = `<div class="roll-box">${r1Display}</div><div class="roll-box">${r2Display}</div>`;
+      }
+    } else {
+      // 10th frame: 3 boxes
+      const displays = rolls.map((r, i) => {
+        if (r === 10) return `<span class="strike">X</span>`;
+        if (i === 1 && rolls[0] !== 10 && rolls[0] + rolls[1] === 10) return `<span class="spare">/</span>`;
+        if (i === 2 && rolls[1] !== 10 && ((rolls[0] === 10 && rolls[1] + rolls[2] === 10) || (rolls[0] !== 10 && rolls[0]+rolls[1]===10))) {
+          // Check if roll3 completes a spare with roll2 (only when roll2 is after a strike-reset)
+          if (rolls[0] === 10 && rolls[1] !== 10 && rolls[1] + rolls[2] === 10) return `<span class="spare">/</span>`;
+        }
+        if (r === 0) return `<span class="gutter">—</span>`;
+        return r;
+      });
+      rollBoxes = displays.map(d => `<div class="roll-box">${d}</div>`).join('');
+    }
+
+    scorecardHTML += `
+      <div class="frame-cell">
+        <div class="frame-num">${frame.frame_number}</div>
+        <div class="rolls-row">${rollBoxes}</div>
+        <div class="frame-score">
+          ${frame.frame_score}
+          <span class="cumul-score">${frame.cumulative_score}</span>
+        </div>
+      </div>`;
+  }
+
+  scorecardHTML += `</div>
+    <div class="total-row">
+      <span class="total-label">Total Score</span>
+      <span class="total-value">${gameData.total_score}</span>
+    </div>
+  </div>`;
+
+  document.getElementById('scorecard-container').innerHTML = scorecardHTML;
+
+  // Stats
+  let strikes = 0, spares = 0, gutters = 0, openFrames = 0;
+  const allPins = [];
+
+  for (const frame of gameData.frames) {
+    const rolls = frame.rolls;
+    if (rolls[0] === 10) {
+      strikes++;
+    } else if (rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
+      spares++;
+    } else {
+      openFrames++;
+    }
+    rolls.forEach(r => {
+      allPins.push(r);
+      if (r === 0) gutters++;
+    });
+  }
+
+  const avgPins = (allPins.reduce((a,b) => a+b, 0) / allPins.length).toFixed(1);
+
+  document.getElementById('stats-container').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Strikes</div>
+        <div class="stat-value" style="color:var(--strike)">${strikes}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Spares</div>
+        <div class="stat-value" style="color:var(--spare)">${spares}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Open Frames</div>
+        <div class="stat-value" style="color:var(--accent2)">${openFrames}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gutter Balls</div>
+        <div class="stat-value" style="color:var(--gutter)">${gutters}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Pins/Roll</div>
+        <div class="stat-value" style="color:var(--accent)">${avgPins}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Strike Rate</div>
+        <div class="stat-value" style="color:var(--strike)">${(strikes/10*100).toFixed(0)}%</div>
+      </div>
+    </div>`;
+
+  // Bar chart of rolls per frame
+  let chartHTML = `<div class="roll-chart"><h3>Pins Per Frame</h3><div class="chart-bars">`;
+  const maxFrameRoll = 30; // max possible in 10th frame
+
+  for (const frame of gameData.frames) {
+    const total = frame.rolls.reduce((a,b) => a+b, 0);
+    const maxH = frame.frame_number === 10 ? 30 : 10;
+    const barH = Math.max(2, (total / maxH) * 100);
+
+    let barColor = 'var(--accent)';
+    if (frame.rolls[0] === 10) barColor = 'var(--strike)';
+    else if (frame.rolls.length >= 2 && frame.rolls[0] + frame.rolls[1] === 10) barColor = 'var(--spare)';
+
+    chartHTML += `
+      <div class="chart-bar-group">
+        <div class="chart-bar r1" style="height:${barH}%;background:${barColor};width:80%;max-width:40px;"></div>
+        <div class="chart-label">F${frame.frame_number}</div>
+      </div>`;
+  }
+
+  chartHTML += `</div></div>`;
+  document.getElementById('chart-container').innerHTML = chartHTML;
+
+  // Pin diagrams per frame
+  let pinsHTML = `<div class="pin-section"><h3>Pin States After Roll 1</h3><div class="pin-frames">`;
+
+  // Standard bowling pin layout (triangle):
+  // Row 1:    7  8  9  10
+  // Row 2:      4  5  6
+  // Row 3:        2  3
+  // Row 4:          1
+  const pinLayout = [[7,8,9,10],[4,5,6],[2,3],[1]];
+
+  for (const frame of gameData.frames) {
+    const r1 = frame.rolls[0];
+    // Simulate which pins are down (deterministic from pin count)
+    // We knock pins front-to-back (pin 1 first)
+    const pinsDown = new Set();
+    const pinOrder = [1,2,3,4,5,6,7,8,9,10]; // front to back
+    for (let i = 0; i < r1 && i < 10; i++) pinsDown.add(pinOrder[i]);
+
+    let pinHTML = `<div class="pin-frame-card"><div class="pf-label">F${frame.frame_number} · R1: ${r1}</div><div class="pin-triangle">`;
+    for (const row of pinLayout) {
+      pinHTML += `<div class="pin-row">`;
+      for (const p of row) {
+        pinHTML += `<div class="pin-dot${pinsDown.has(p) ? ' down' : ''}"></div>`;
+      }
+      pinHTML += `</div>`;
+    }
+    pinHTML += `</div></div>`;
+    pinsHTML += pinHTML;
+  }
+
+  pinsHTML += `</div></div>`;
+  document.getElementById('pins-container').innerHTML = pinsHTML;
+}
+
+// ============================================================
+//  INTERACTIVE CONTROLS
+// ============================================================
+function runInteractive() {
+  const skill = parseFloat(document.getElementById('ctrl-skill').value);
+  const seed = parseInt(document.getElementById('ctrl-seed').value) || 42;
+  const gameData = simulateGame(skill, seed);
+  renderViz(gameData);
+}
+
+document.getElementById('ctrl-skill')?.addEventListener('input', function() {
+  document.getElementById('skill-display').textContent = parseFloat(this.value).toFixed(2);
+});
+
+// ============================================================
+//  MAIN: ROUTE BASED ON QUERY PARAMS
+// ============================================================
+(function main() {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode');
+  const skill = parseFloat(params.get('skill'));
+  const seed = parseInt(params.get('seed'));
+
+  if (mode === 'frame') {
+    // Frame mode — return JSON
+    document.body.className = 'api-mode';
+    const isLastFrame = params.get('isLastFrame') === '1';
+    const result = simulateFrameOnly(skill, seed, isLastFrame);
+    document.getElementById('json-output').textContent = JSON.stringify(result, null, 2);
+    // Set content type hint in title
+    document.title = 'application/json';
+    return;
+  }
+
+  if (mode === 'game') {
+    // Game mode — return JSON
+    document.body.className = 'api-mode';
+    const result = simulateGame(skill, seed);
+    document.getElementById('json-output').textContent = JSON.stringify(result, null, 2);
+    document.title = 'application/json';
+    return;
+  }
+
+  if (mode === 'viz') {
+    // Viz mode — render visual scorecard
+    document.getElementById('viz-root').style.display = 'block';
+    const gameData = simulateGame(skill, seed);
+    renderViz(gameData);
+    // Set controls to match params
+    if (!isNaN(skill)) {
+      document.getElementById('ctrl-skill').value = skill;
+      document.getElementById('skill-display').textContent = skill.toFixed(2);
+    }
+    if (!isNaN(seed)) {
+      document.getElementById('ctrl-seed').value = seed;
+    }
+    return;
+  }
+
+  // No mode or unknown mode — show interactive viz with defaults
+  document.getElementById('viz-root').style.display = 'block';
+  const defaultSkill = isNaN(skill) ? 0.75 : skill;
+  const defaultSeed = isNaN(seed) ? 42 : seed;
+  document.getElementById('ctrl-skill').value = defaultSkill;
+  document.getElementById('skill-display').textContent = defaultSkill.toFixed(2);
+  document.getElementById('ctrl-seed').value = defaultSeed;
+  const gameData = simulateGame(defaultSkill, defaultSeed);
+  renderViz(gameData);
+})();
+</script>
+</body>
+</html>

@@ -87,13 +87,6 @@
     color: var(--accent);
   }
 
-  .header-sub {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-top: 10px;
-    font-weight: 400;
-  }
-
   /* Params bar */
   .params-bar {
     display: flex;
@@ -103,17 +96,18 @@
   }
 
   .param-chip {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 5px 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 5px 16px;
     border-radius: 2px;
     background: var(--accent-pale);
     border: 1px solid var(--border);
     color: var(--text-mid);
   }
 
-  .param-chip .label { color: var(--text-dim); }
-  .param-chip .value { color: var(--accent); font-weight: 500; }
+  .param-chip .label { color: var(--text-dim); font-style: italic; }
+  .param-chip .value { color: var(--accent); font-weight: 400; }
 
   /* Section labels */
   .section-label {
@@ -452,15 +446,6 @@
     text-transform: uppercase;
   }
 
-  .footer-note {
-    text-align: center;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    padding: 20px 0 0;
-    border-top: 1px solid var(--border);
-  }
-
   .divider {
     border: none;
     border-top: 1px solid var(--border);
@@ -476,7 +461,6 @@
   <div class="header">
     <div class="header-eyebrow">ORF 401 &middot; Simulation Engine</div>
     <h1>Bowling <em>Simulator</em></h1>
-    <div class="header-sub">Deterministic &middot; Seeded &middot; Parametric &mdash; f(skill, seed) &rarr; game</div>
   </div>
 
   <div id="params-bar" class="params-bar"></div>
@@ -503,7 +487,6 @@
   <div id="chart-container"></div>
   <div id="pins-container"></div>
 
-  <div class="footer-note">Deterministic Bowling Engine &middot; seed once, draw sequentially &middot; f(mode, skill, seed) &rarr; output</div>
 </div>
 
 <script>

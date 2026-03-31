@@ -855,9 +855,9 @@ function renderViz(gameData) {
     const maxH = frame.frame_number === 10 ? 30 : 10;
     const barH = Math.max(2, (total / maxH) * 100);
 
-    let barColor = 'var(--accent)';
-    if (frame.rolls[0] === 10) barColor = 'var(--strike)';
-    else if (frame.rolls.length >= 2 && frame.rolls[0] + frame.rolls[1] === 10) barColor = 'var(--spare)';
+    let barColor = '#c4a882'; // open: light warm tan
+    if (frame.rolls[0] === 10) barColor = '#7a5c3e'; // strike: deep espresso
+    else if (frame.rolls.length >= 2 && frame.rolls[0] + frame.rolls[1] === 10) barColor = '#9b6f4e'; // spare: mid terracotta
 
     chartHTML += `
       <div class="chart-bar-group">

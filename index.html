@@ -5,28 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bowling Simulation Engine</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
   :root {
-    --bg: #0c0e13;
-    --surface: #151820;
-    --surface2: #1c2030;
-    --border: #2a2f42;
-    --text: #e8eaf0;
-    --text-dim: #7a809a;
-    --accent: #f7a440;
-    --accent2: #e85d5d;
-    --strike: #5ee89e;
-    --spare: #5eb3e8;
-    --gutter: #e85d5d;
-    --pin-on: #e8eaf0;
-    --pin-off: #2a2f42;
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e2ddd6;
+    --border-strong: #c8c0b4;
+    --text: #1a1714;
+    --text-dim: #8a8078;
+    --text-mid: #4a4440;
+    --accent: #9b6f4e;
+    --accent-light: #c4956e;
+    --accent-pale: #f2ebe3;
+    --strike: #4a7c6f;
+    --strike-pale: #e8f2ef;
+    --spare: #5b6fa8;
+    --spare-pale: #eef0f8;
+    --gutter: #b85c5c;
+    --pin-on: #2a2420;
+    --pin-off: #ddd8d0;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -46,71 +51,183 @@
 
   /* ---------- VIZ MODE ---------- */
   .viz-container {
-    max-width: 1100px;
+    max-width: 1060px;
     margin: 0 auto;
-    padding: 32px 24px;
+    padding: 56px 32px 80px;
   }
 
+  /* Header */
   .header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 32px;
+    margin-bottom: 52px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+
+  .header-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
   }
 
   .header h1 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 46px;
+    font-weight: 300;
     letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.1;
   }
 
-  .header .badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
+  .header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header-sub {
+    font-size: 13px;
     color: var(--text-dim);
+    margin-top: 10px;
+    font-weight: 400;
   }
 
+  /* Params bar */
   .params-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: 8px;
+    margin-bottom: 40px;
   }
 
   .param-chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: var(--surface);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 2px;
+    background: var(--accent-pale);
     border: 1px solid var(--border);
+    color: var(--text-mid);
   }
 
   .param-chip .label { color: var(--text-dim); }
-  .param-chip .value { color: var(--accent); font-weight: 600; }
+  .param-chip .value { color: var(--accent); font-weight: 500; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* Controls */
+  .controls-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 40px;
+  }
+
+  .control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-end;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .control-group label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .control-group input[type="range"] {
+    width: 220px;
+    accent-color: var(--accent);
+    height: 2px;
+  }
+
+  .skill-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .control-group input[type="number"] {
+    width: 110px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .control-group input[type="number"]:focus { border-color: var(--accent); }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 28px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn:hover { background: var(--text); border-color: var(--text); }
 
   /* Scorecard */
   .scorecard {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 32px;
+    margin-bottom: 40px;
+  }
+
+  .scorecard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
   }
 
   .scorecard-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .scorecard-subtitle {
+    font-size: 11px;
     color: var(--text-dim);
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.05em;
   }
 
   .frames-row {
@@ -127,17 +244,20 @@
   .frame-cell:last-child { border-right: none; }
 
   .frame-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     color: var(--text-dim);
     text-align: center;
-    padding: 6px 0 2px;
+    padding: 8px 0 4px;
     border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
   }
 
   .rolls-row {
     display: flex;
-    height: 36px;
+    height: 38px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -146,10 +266,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    font-weight: 600;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
     border-right: 1px solid var(--border);
+    color: var(--text-mid);
   }
   .roll-box:last-child { border-right: none; }
   .roll-box.strike { color: var(--strike); }
@@ -157,130 +278,128 @@
   .roll-box.gutter { color: var(--gutter); }
 
   .frame-score {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
-    font-weight: 700;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
     text-align: center;
-    padding: 10px 0;
+    padding: 10px 4px 4px;
     color: var(--text);
   }
 
   .cumul-score {
-    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
     color: var(--text-dim);
     font-weight: 400;
     display: block;
     margin-top: 2px;
+    padding-bottom: 8px;
   }
 
-  /* Total score */
+  /* Total row */
   .total-row {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
-    padding: 16px 20px;
+    align-items: baseline;
+    padding: 18px 24px;
     border-top: 1px solid var(--border);
-    gap: 12px;
+    gap: 16px;
+    background: var(--accent-pale);
   }
 
   .total-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    color: var(--text-dim);
   }
 
   .total-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 32px;
-    font-weight: 700;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 300;
     color: var(--accent);
+    line-height: 1;
   }
 
   /* Stats grid */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 40px;
   }
 
   .stat-card {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    padding: 20px 20px 18px;
   }
 
   .stat-card .stat-label {
-    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--text-dim);
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
   }
 
   .stat-card .stat-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 300;
+    line-height: 1;
   }
 
   /* Pin diagram */
   .pin-section {
-    margin-bottom: 32px;
-  }
-
-  .pin-section h3 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
+    margin-bottom: 40px;
   }
 
   .pin-frames {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 10px;
   }
 
   .pin-frame-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    min-width: 80px;
+    border-radius: 4px;
+    padding: 12px 14px;
+    min-width: 76px;
     text-align: center;
   }
 
   .pin-frame-card .pf-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
-  .pin-triangle {
-    display: inline-block;
-  }
+  .pin-triangle { display: inline-block; }
 
   .pin-row {
     display: flex;
     justify-content: center;
-    gap: 4px;
-    margin-bottom: 3px;
+    gap: 5px;
+    margin-bottom: 4px;
   }
 
   .pin-dot {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--pin-on);
-    transition: background 0.2s;
   }
   .pin-dot.down { background: var(--pin-off); }
 
@@ -288,25 +407,17 @@
   .roll-chart {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 32px;
-  }
-
-  .roll-chart h3 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-bottom: 40px;
   }
 
   .chart-bars {
     display: flex;
     align-items: flex-end;
-    gap: 4px;
-    height: 120px;
+    gap: 6px;
+    height: 110px;
+    margin-top: 20px;
   }
 
   .chart-bar-group {
@@ -320,144 +431,78 @@
 
   .chart-bar {
     width: 100%;
-    max-width: 32px;
-    border-radius: 4px 4px 0 0;
+    max-width: 36px;
+    border-radius: 2px 2px 0 0;
     min-height: 2px;
     transition: height 0.3s;
+    opacity: 0.85;
   }
 
   .chart-bar.r1 { background: var(--accent); }
-  .chart-bar.r2 { background: var(--spare); opacity: 0.7; }
-  .chart-bar.r3 { background: var(--strike); opacity: 0.7; }
+  .chart-bar.r2 { background: var(--spare); }
+  .chart-bar.r3 { background: var(--strike); }
 
   .chart-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     color: var(--text-dim);
-    margin-top: 6px;
-  }
-
-  /* Controls (interactive panel) */
-  .controls-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-
-  .controls-panel h3 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
+    margin-top: 7px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
   }
-
-  .control-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 12px;
-  }
-
-  .control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .control-group label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  .control-group input[type="range"] {
-    width: 200px;
-    accent-color: var(--accent);
-  }
-
-  .control-group input[type="number"] {
-    width: 100px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-  }
-
-  .btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 8px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: var(--accent);
-    color: var(--bg);
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.85; }
 
   /* API docs */
   .api-docs {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-
-  .api-docs h3 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 40px;
   }
 
   .api-docs code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    background: var(--surface2);
+    font-size: 11px;
+    background: var(--accent-pale);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 2px;
     color: var(--accent);
   }
 
   .api-docs p {
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--text-dim);
-    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-mid);
+    margin-bottom: 6px;
   }
 
   .api-example {
-    background: var(--surface2);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px;
+    border-radius: 2px;
+    padding: 12px 16px;
     margin: 10px 0;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
+    font-size: 11px;
+    color: var(--text-mid);
     overflow-x: auto;
     white-space: pre;
   }
 
   .footer-note {
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     color: var(--text-dim);
-    padding: 20px 0 40px;
-    font-family: 'JetBrains Mono', monospace;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
   }
 </style>
 </head>
@@ -465,26 +510,29 @@
 <div id="json-output"></div>
 
 <div id="viz-root" class="viz-container" style="display:none;">
+
   <div class="header">
-    <h1>🎳 Bowling Simulation Engine</h1>
-    <span class="badge">v1.0 · deterministic</span>
+    <div class="header-eyebrow">ORF 401 &middot; Simulation Engine</div>
+    <h1>Bowling <em>Simulator</em></h1>
+    <div class="header-sub">Deterministic &middot; Seeded &middot; Parametric &mdash; f(skill, seed) &rarr; game</div>
   </div>
 
   <div id="params-bar" class="params-bar"></div>
 
   <!-- Interactive controls -->
   <div class="controls-panel">
-    <h3>Simulation Controls</h3>
+    <div class="section-label">Simulation Controls</div>
     <div class="control-row">
       <div class="control-group">
-        <label>Skill: <span id="skill-display">0.75</span></label>
+        <label>Skill level</label>
+        <div class="skill-value" id="skill-display">0.75</div>
         <input type="range" id="ctrl-skill" min="0" max="1" step="0.01" value="0.75">
       </div>
       <div class="control-group">
-        <label>Seed</label>
+        <label>Random seed</label>
         <input type="number" id="ctrl-seed" value="42" min="0" max="999999">
       </div>
-      <button class="btn" onclick="runInteractive()">Simulate</button>
+      <button class="btn" onclick="runInteractive()">Run Simulation</button>
     </div>
   </div>
 
@@ -494,17 +542,17 @@
   <div id="pins-container"></div>
 
   <div class="api-docs">
-    <h3>API Reference</h3>
-    <p>This engine exposes a stateless simulation via query parameters. Same inputs always produce identical outputs.</p>
-    <p><strong>Frame mode:</strong></p>
+    <div class="section-label">API Reference</div>
+    <p>Stateless simulation via query parameters. Identical inputs always produce identical outputs.</p>
+    <p><strong>Frame mode</strong></p>
     <div class="api-example">?mode=frame&skill=0.75&seed=42&isLastFrame=0</div>
-    <p><strong>Game mode:</strong></p>
+    <p><strong>Game mode</strong></p>
     <div class="api-example">?mode=game&skill=0.75&seed=42</div>
-    <p><strong>Visualization:</strong></p>
+    <p><strong>Visualization</strong></p>
     <div class="api-example">?mode=viz&skill=0.75&seed=42</div>
   </div>
 
-  <div class="footer-note">Deterministic Bowling Engine · seed once, draw sequentially · f(mode, skill, seed) → output</div>
+  <div class="footer-note">Deterministic Bowling Engine &middot; seed once, draw sequentially &middot; f(mode, skill, seed) &rarr; output</div>
 </div>
 
 <script>
@@ -756,7 +804,10 @@ function renderViz(gameData) {
 
   // Scorecard
   let scorecardHTML = `<div class="scorecard">
-    <div class="scorecard-title">Scorecard</div>
+    <div class="scorecard-header">
+      <span class="scorecard-title">Scorecard</span>
+      <span class="scorecard-subtitle">10 frames &middot; official scoring</span>
+    </div>
     <div class="frames-row">`;
 
   for (const frame of gameData.frames) {
@@ -810,6 +861,7 @@ function renderViz(gameData) {
 
   // Stats
   let strikes = 0, spares = 0, gutters = 0, openFrames = 0;
+
   const allPins = [];
 
   for (const frame of gameData.frames) {
@@ -830,6 +882,7 @@ function renderViz(gameData) {
   const avgPins = (allPins.reduce((a,b) => a+b, 0) / allPins.length).toFixed(1);
 
   document.getElementById('stats-container').innerHTML = `
+    <div class="section-label" style="margin-bottom:12px">Performance</div>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Strikes</div>
@@ -858,7 +911,7 @@ function renderViz(gameData) {
     </div>`;
 
   // Bar chart of rolls per frame
-  let chartHTML = `<div class="roll-chart"><h3>Pins Per Frame</h3><div class="chart-bars">`;
+  let chartHTML = `<div class="roll-chart"><div class="section-label">Pins Per Frame</div><div class="chart-bars">`;
   const maxFrameRoll = 30; // max possible in 10th frame
 
   for (const frame of gameData.frames) {
@@ -881,7 +934,7 @@ function renderViz(gameData) {
   document.getElementById('chart-container').innerHTML = chartHTML;
 
   // Pin diagrams per frame
-  let pinsHTML = `<div class="pin-section"><h3>Pin States After Roll 1</h3><div class="pin-frames">`;
+  let pinsHTML = `<div class="pin-section"><div class="section-label" style="margin-bottom:14px">Pin States After Roll 1</div><div class="pin-frames">`;
 
   // Standard bowling pin layout (triangle):
   // Row 1:    7  8  9  10

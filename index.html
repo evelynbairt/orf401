@@ -6,24 +6,24 @@
 <title>Bowling Simulation Engine</title>
 <style>
   :root {
-    --bg: #ffffff;
+    --bg: #f4f6f9;
     --surface: #ffffff;
-    --surface2: #f0ede8;
-    --border: #e2ddd6;
-    --border-strong: #c8c0b4;
-    --text: #1a1714;
-    --text-dim: #8a8078;
-    --text-mid: #4a4440;
-    --accent: #9b6f4e;
-    --accent-light: #c4956e;
-    --accent-pale: #f2ebe3;
-    --strike: #4a7c6f;
-    --strike-pale: #e8f2ef;
-    --spare: #5b6fa8;
-    --spare-pale: #eef0f8;
-    --gutter: #b85c5c;
-    --pin-on: #2a2420;
-    --pin-off: #ddd8d0;
+    --surface2: #eef2f7;
+    --border: #d4dce8;
+    --border-strong: #9aa8bc;
+    --text: #1a2332;
+    --text-dim: #5c6b7f;
+    --text-mid: #3d4d63;
+    --accent: #2d4f7c;
+    --accent-light: #4a6fa5;
+    --accent-pale: #e4eaf3;
+    --strike: #1a6b8c;
+    --strike-pale: #dbeef5;
+    --spare: #3d5a9e;
+    --spare-pale: #e8edf7;
+    --gutter: #8b4a5c;
+    --pin-on: #1e2836;
+    --pin-off: #c8d2e0;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -301,33 +301,6 @@
     padding-bottom: 8px;
   }
 
-  /* Total row */
-  .total-row {
-    display: flex;
-    justify-content: flex-end;
-    align-items: baseline;
-    padding: 18px 24px;
-    border-top: 1px solid var(--border);
-    gap: 16px;
-    background: var(--accent-pale);
-  }
-
-  .total-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .total-value {
-    font-family: Arial, sans-serif;
-    font-size: 42px;
-    font-weight: 300;
-    color: var(--accent);
-    line-height: 1;
-  }
-
   /* Stats grid */
   .stats-grid {
     display: grid;
@@ -359,6 +332,7 @@
     font-size: 34px;
     font-weight: 300;
     line-height: 1;
+    color: var(--text);
   }
 
   /* Pin diagram */
@@ -443,9 +417,9 @@
     opacity: 0.85;
   }
 
-  .chart-bar.r1 { background: #c4a882; }
-  .chart-bar.r2 { background: #9b6f4e; }
-  .chart-bar.r3 { background: #7a5c3e; }
+  .chart-bar.r1 { background: #b8c5d6; }
+  .chart-bar.r2 { background: #5c7a9e; }
+  .chart-bar.r3 { background: #2d4f7c; }
 
   .chart-label {
     font-family: Arial, sans-serif;
@@ -798,10 +772,6 @@ function renderViz(gameData) {
   }
 
   scorecardHTML += `</div>
-    <div class="total-row">
-      <span class="total-label">Total Score</span>
-      <span class="total-value">${gameData.total_score}</span>
-    </div>
   </div>`;
 
   document.getElementById('scorecard-container').innerHTML = scorecardHTML;
@@ -833,27 +803,27 @@ function renderViz(gameData) {
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Strikes</div>
-        <div class="stat-value" style="color:var(--strike)">${strikes}</div>
+        <div class="stat-value">${strikes}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Spares</div>
-        <div class="stat-value" style="color:var(--spare)">${spares}</div>
+        <div class="stat-value">${spares}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Open Frames</div>
-        <div class="stat-value" style="color:var(--accent2)">${openFrames}</div>
+        <div class="stat-value">${openFrames}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Gutter Balls</div>
-        <div class="stat-value" style="color:var(--gutter)">${gutters}</div>
+        <div class="stat-value">${gutters}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Avg Pins/Roll</div>
-        <div class="stat-value" style="color:var(--accent)">${avgPins}</div>
+        <div class="stat-value">${avgPins}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Strike Rate</div>
-        <div class="stat-value" style="color:var(--strike)">${(strikes/10*100).toFixed(0)}%</div>
+        <div class="stat-value">${(strikes/10*100).toFixed(0)}%</div>
       </div>
     </div>`;
 
@@ -866,9 +836,9 @@ function renderViz(gameData) {
     const maxH = frame.frame_number === 10 ? 30 : 10;
     const barH = Math.max(2, (total / maxH) * 100);
 
-    let barColor = '#c4a882'; // open: light warm tan
-    if (frame.rolls[0] === 10) barColor = '#7a5c3e'; // strike: deep espresso
-    else if (frame.rolls.length >= 2 && frame.rolls[0] + frame.rolls[1] === 10) barColor = '#9b6f4e'; // spare: mid terracotta
+    let barColor = '#b8c5d6';
+    if (frame.rolls[0] === 10) barColor = '#2d4f7c';
+    else if (frame.rolls.length >= 2 && frame.rolls[0] + frame.rolls[1] === 10) barColor = '#4a6fa5';
 
     chartHTML += `
       <div class="chart-bar-group">

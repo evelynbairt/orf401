@@ -17,11 +17,6 @@
     --accent: #2d4f7c;
     --accent-light: #4a6fa5;
     --accent-pale: #e4eaf3;
-    --strike: #1a6b8c;
-    --strike-pale: #dbeef5;
-    --spare: #3d5a9e;
-    --spare-pale: #e8edf7;
-    --gutter: #8b4a5c;
     --pin-on: #1e2836;
     --pin-off: #c8d2e0;
   }
@@ -205,102 +200,6 @@
   }
   .btn:hover { background: var(--text); border-color: var(--text); }
 
-  /* Scorecard */
-  .scorecard {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 40px;
-  }
-
-  .scorecard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .scorecard-title {
-    font-family: Arial, sans-serif;
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--text);
-  }
-
-  .scorecard-subtitle {
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-
-  .frames-row {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 0;
-  }
-
-  .frame-cell {
-    border-right: 1px solid var(--border);
-    padding: 0;
-    position: relative;
-  }
-  .frame-cell:last-child { border-right: none; }
-
-  .frame-num {
-    font-family: Arial, sans-serif;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    text-align: center;
-    padding: 8px 0 4px;
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-  }
-
-  .rolls-row {
-    display: flex;
-    height: 38px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .roll-box {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Arial, sans-serif;
-    font-size: 17px;
-    font-weight: 400;
-    border-right: 1px solid var(--border);
-    color: var(--text-mid);
-  }
-  .roll-box:last-child { border-right: none; }
-  .roll-box.strike { color: var(--strike); }
-  .roll-box.spare { color: var(--spare); }
-  .roll-box.gutter { color: var(--gutter); }
-
-  .frame-score {
-    font-family: Arial, sans-serif;
-    font-size: 20px;
-    font-weight: 300;
-    text-align: center;
-    padding: 10px 4px 4px;
-    color: var(--text);
-  }
-
-  .cumul-score {
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-    color: var(--text-dim);
-    font-weight: 400;
-    display: block;
-    margin-top: 2px;
-    padding-bottom: 8px;
-  }
-
   /* Stats grid */
   .stats-grid {
     display: grid;
@@ -467,7 +366,6 @@
     </div>
   </div>
 
-  <div id="scorecard-container"></div>
   <div id="stats-container"></div>
   <div id="chart-container"></div>
   <div id="pins-container"></div>
@@ -723,59 +621,6 @@ function renderViz(gameData) {
     <div class="param-chip"><span class="label">total </span><span class="value">${gameData.total_score}</span></div>
   `;
 
-  // Scorecard
-  let scorecardHTML = `<div class="scorecard">
-    <div class="scorecard-header">
-      <span class="scorecard-title">Scorecard</span>
-      <span class="scorecard-subtitle">10 frames &middot; official scoring</span>
-    </div>
-    <div class="frames-row">`;
-
-  for (const frame of gameData.frames) {
-    const rolls = frame.rolls;
-    const isLast = frame.frame_number === 10;
-    let rollBoxes = '';
-
-    if (!isLast) {
-      if (rolls[0] === 10) {
-        rollBoxes = `<div class="roll-box">&nbsp;</div><div class="roll-box strike">X</div>`;
-      } else {
-        const r1Display = rolls[0] === 0 ? `<span class="gutter">—</span>` : rolls[0];
-        const isSpare = rolls.length >= 2 && rolls[0] + rolls[1] === 10;
-        const r2Display = isSpare ? `<span class="spare">/</span>` : (rolls[1] === 0 ? `<span class="gutter">—</span>` : rolls[1]);
-        rollBoxes = `<div class="roll-box">${r1Display}</div><div class="roll-box">${r2Display}</div>`;
-      }
-    } else {
-      // 10th frame: 3 boxes
-      const displays = rolls.map((r, i) => {
-        if (r === 10) return `<span class="strike">X</span>`;
-        if (i === 1 && rolls[0] !== 10 && rolls[0] + rolls[1] === 10) return `<span class="spare">/</span>`;
-        if (i === 2 && rolls[1] !== 10 && ((rolls[0] === 10 && rolls[1] + rolls[2] === 10) || (rolls[0] !== 10 && rolls[0]+rolls[1]===10))) {
-          // Check if roll3 completes a spare with roll2 (only when roll2 is after a strike-reset)
-          if (rolls[0] === 10 && rolls[1] !== 10 && rolls[1] + rolls[2] === 10) return `<span class="spare">/</span>`;
-        }
-        if (r === 0) return `<span class="gutter">—</span>`;
-        return r;
-      });
-      rollBoxes = displays.map(d => `<div class="roll-box">${d}</div>`).join('');
-    }
-
-    scorecardHTML += `
-      <div class="frame-cell">
-        <div class="frame-num">${frame.frame_number}</div>
-        <div class="rolls-row">${rollBoxes}</div>
-        <div class="frame-score">
-          ${frame.frame_score}
-          <span class="cumul-score">${frame.cumulative_score}</span>
-        </div>
-      </div>`;
-  }
-
-  scorecardHTML += `</div>
-  </div>`;
-
-  document.getElementById('scorecard-container').innerHTML = scorecardHTML;
-
   // Stats
   let strikes = 0, spares = 0, gutters = 0, openFrames = 0;
 
@@ -928,7 +773,7 @@ document.getElementById('ctrl-skill')?.addEventListener('input', function() {
   }
 
   if (mode === 'viz') {
-    // Viz mode — render visual scorecard
+    // Viz mode
     document.getElementById('viz-root').style.display = 'block';
     const gameData = simulateGame(skill, seed);
     renderViz(gameData);
